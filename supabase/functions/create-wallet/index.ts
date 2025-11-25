@@ -65,7 +65,7 @@ serve(async (req) => {
       .from('wallets')
       .select('wallet_address, chain, balance')
       .eq('user_id', userId)
-      .eq('chain', 'ethereum')
+      .eq('chain', 'base')
       .maybeSingle()
 
     if (fetchError) {
@@ -106,7 +106,7 @@ serve(async (req) => {
         user_id: userId,
         wallet_address: address,
         encrypted_private_key: encryptedKey,
-        chain: 'ethereum',
+        chain: 'base',
         balance: '0'
       })
       .select()
@@ -125,7 +125,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         wallet_address: address,
-        chain: 'ethereum',
+        chain: 'base',
         balance: '0'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
