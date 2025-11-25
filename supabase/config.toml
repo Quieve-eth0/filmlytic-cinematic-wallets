@@ -1,1 +1,4 @@
 project_id = "wfdehsurudyzquviyfjb"
+
+[functions.create-wallet]
+verify_jwt = true
