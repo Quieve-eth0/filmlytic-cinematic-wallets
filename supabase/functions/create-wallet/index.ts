@@ -13,42 +13,48 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client - it will automatically extract auth from request
+    // Get JWT from Authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      console.error('No authorization header')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized', details: 'No authorization header' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
+    }
+
+    const jwt = authHeader.replace('Bearer ', '')
+    console.log('JWT token present')
+
+    // Create Supabase client with the JWT
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
+        },
+        auth: {
+          persistSession: false,
         },
       }
     )
 
-    // Get the user from the JWT token
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser()
+    // Decode the JWT to get user ID (JWT is already verified by Deno)
+    const payload = JSON.parse(atob(jwt.split('.')[1]))
+    const userId = payload.sub
 
-    if (userError) {
-      console.error('Auth error:', userError.message)
+    if (!userId) {
+      console.error('No user ID in JWT')
       return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: userError.message }),
+        JSON.stringify({ error: 'Unauthorized', details: 'Invalid token' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       )
     }
 
-    if (!user) {
-      console.error('No user found in token')
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - No user found' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      )
-    }
+    console.log('Creating wallet for user:', userId)
 
-    console.log('Creating wallet for user:', user.id)
-
-    // Use service role client to check for existing wallet (bypasses RLS)
+    // Use service role client for database operations (bypasses RLS)
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -58,7 +64,7 @@ serve(async (req) => {
     const { data: existingWallet, error: fetchError } = await supabaseAdmin
       .from('wallets')
       .select('wallet_address, chain, balance')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('chain', 'ethereum')
       .maybeSingle()
 
@@ -93,11 +99,11 @@ serve(async (req) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     const encryptedKey = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-    // Store the wallet in the database using service role to bypass RLS
+    // Store the wallet in the database
     const { data: walletData, error: walletError } = await supabaseAdmin
       .from('wallets')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         wallet_address: address,
         encrypted_private_key: encryptedKey,
         chain: 'ethereum',
@@ -128,7 +134,7 @@ serve(async (req) => {
     console.error('Error in create-wallet function:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: 'Server error', details: errorMessage }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
