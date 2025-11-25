@@ -69,24 +69,15 @@ const Dashboard = () => {
   const createWallet = async () => {
     setCreatingWallet(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error("Please sign in to create a wallet");
-        navigate("/auth");
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke("create-wallet", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      const { data, error } = await supabase.functions.invoke("create-wallet");
 
       if (error) throw error;
 
       toast.success("Wallet created successfully!");
       setWallet(data);
+      
+      // Refresh wallet data from database
+      await checkUser();
     } catch (error: any) {
       console.error("Error creating wallet:", error);
       toast.error(error.message || "Failed to create wallet");
