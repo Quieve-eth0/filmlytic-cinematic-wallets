@@ -13,52 +13,58 @@ serve(async (req) => {
   }
 
   try {
-    // Get the authorization header
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      console.error('No authorization header found')
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - No auth header' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      )
-    }
-
-    console.log('Authorization header present')
-
-    // Create Supabase client with the auth header
+    // Create Supabase client - it will automatically extract auth from request
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: authHeader },
+          headers: { Authorization: req.headers.get('Authorization')! },
         },
       }
     )
 
-    // Get the user
+    // Get the user from the JWT token
     const {
       data: { user },
       error: userError,
     } = await supabaseClient.auth.getUser()
 
-    if (userError || !user) {
-      console.error('Auth error:', userError)
+    if (userError) {
+      console.error('Auth error:', userError.message)
       return new Response(
-        JSON.stringify({ error: 'Unauthorized - Invalid token' }),
+        JSON.stringify({ error: 'Unauthorized', details: userError.message }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
+    }
+
+    if (!user) {
+      console.error('No user found in token')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - No user found' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       )
     }
 
     console.log('Creating wallet for user:', user.id)
 
+    // Use service role client to check for existing wallet (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
     // Check if user already has a wallet
-    const { data: existingWallet } = await supabaseClient
+    const { data: existingWallet, error: fetchError } = await supabaseAdmin
       .from('wallets')
-      .select('*')
+      .select('wallet_address, chain, balance')
       .eq('user_id', user.id)
       .eq('chain', 'ethereum')
-      .single()
+      .maybeSingle()
+
+    if (fetchError) {
+      console.error('Error fetching wallet:', fetchError)
+    }
 
     if (existingWallet) {
       console.log('Wallet already exists for user')
@@ -66,7 +72,7 @@ serve(async (req) => {
         JSON.stringify({ 
           wallet_address: existingWallet.wallet_address,
           chain: existingWallet.chain,
-          balance: existingWallet.balance
+          balance: existingWallet.balance || '0'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
@@ -88,11 +94,6 @@ serve(async (req) => {
     const encryptedKey = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
     // Store the wallet in the database using service role to bypass RLS
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
     const { data: walletData, error: walletError } = await supabaseAdmin
       .from('wallets')
       .insert({
