@@ -13,12 +13,25 @@ serve(async (req) => {
   }
 
   try {
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      console.error('No authorization header found')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - No auth header' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
+    }
+
+    console.log('Authorization header present')
+
+    // Create Supabase client with the auth header
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     )
@@ -32,7 +45,7 @@ serve(async (req) => {
     if (userError || !user) {
       console.error('Auth error:', userError)
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized - Invalid token' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       )
     }
@@ -52,7 +65,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           wallet_address: existingWallet.wallet_address,
-          chain: existingWallet.chain
+          chain: existingWallet.chain,
+          balance: existingWallet.balance
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
@@ -104,7 +118,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         wallet_address: address,
-        chain: 'ethereum'
+        chain: 'ethereum',
+        balance: '0'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
