@@ -26,7 +26,19 @@ const Dashboard = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        checkUser();
+      }
+    });
+
+    // THEN check for existing session
     checkUser();
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const checkUser = async () => {
@@ -69,9 +81,22 @@ const Dashboard = () => {
   const createWallet = async () => {
     setCreatingWallet(true);
     try {
+      // Verify we have a valid session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast.error("Please sign in again");
+        navigate("/auth");
+        return;
+      }
+
+      console.log("Calling create-wallet with valid session");
       const { data, error } = await supabase.functions.invoke("create-wallet");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Edge function error:", error);
+        throw error;
+      }
 
       toast.success("Wallet created successfully!");
       setWallet(data);
