@@ -17,6 +17,11 @@ interface WalletData {
   balance: string;
 }
 
+interface ExchangeRate {
+  ethToKsh: number;
+  lastUpdated: Date;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -24,6 +29,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [copied, setCopied] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState<ExchangeRate>({ ethToKsh: 0, lastUpdated: new Date() });
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -37,9 +43,28 @@ const Dashboard = () => {
 
     // THEN check for existing session
     checkUser();
+    fetchExchangeRate();
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchExchangeRate = async () => {
+    try {
+      // Fetch ETH to KSH exchange rate from CoinGecko API
+      const response = await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=kes'
+      );
+      const data = await response.json();
+      setExchangeRate({
+        ethToKsh: data.ethereum.kes,
+        lastUpdated: new Date(),
+      });
+    } catch (error) {
+      console.error('Error fetching exchange rate:', error);
+      // Fallback rate if API fails
+      setExchangeRate({ ethToKsh: 450000, lastUpdated: new Date() });
+    }
+  };
 
   const checkUser = async () => {
     try {
@@ -219,7 +244,27 @@ const Dashboard = () => {
                         <p className="text-xl font-semibold text-gold">
                           {wallet.balance} ETH
                         </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          ≈ KSh {(parseFloat(wallet.balance) * exchangeRate.ethToKsh).toLocaleString('en-KE', { 
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2 
+                          })}
+                        </p>
                       </div>
+                    </div>
+
+                    <div className="pt-4">
+                      <a
+                        href={`https://basescan.org/address/${wallet.wallet_address}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-gold hover:text-gold-dark transition-colors"
+                      >
+                        <span>View on BaseScan</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
                     </div>
                   </div>
 
