@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Film, Shield, Wallet, Zap, TrendingUp, Users, Award, ChevronRight } from "lucide-react";
+import { Shield, Wallet, Zap, TrendingUp, Users, Award, ChevronRight } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -49,8 +50,8 @@ const Index = () => {
         
         <div className="container mx-auto px-4 py-20 relative">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <div className="mx-auto w-24 h-24 gradient-gold rounded-3xl flex items-center justify-center mb-8 shadow-gold animate-scale-in">
-              <Film className="w-16 h-16 text-deep-black" />
+            <div className="mb-8 animate-scale-in flex justify-center">
+              <Logo size="xl" />
             </div>
             
             <h1 className="text-6xl md:text-8xl font-bold mb-6 tracking-tight text-gold animate-slide-up">
@@ -163,9 +164,7 @@ const Index = () => {
       <footer className="py-12 px-4 bg-background border-t border-border/30">
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-10 h-10 gradient-gold rounded-xl flex items-center justify-center">
-              <Film className="w-6 h-6 text-deep-black" />
-            </div>
+            <Logo size="sm" />
             <span className="text-2xl font-bold text-gold">Filmlytic</span>
           </div>
           <p className="text-muted-foreground">

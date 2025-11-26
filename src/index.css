@@ -8,53 +8,58 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Cinematic Film Theme - Filmlytic */
-    --background: 0 0% 7%;
-    --foreground: 45 100% 95%;
+    /* Cinematic Film Theme - Enhanced */
+    --background: 240 20% 6%;
+    --foreground: 35 95% 92%;
 
-    --card: 0 0% 10%;
-    --card-foreground: 45 100% 95%;
+    --card: 240 18% 9%;
+    --card-foreground: 35 95% 92%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 45 100% 95%;
+    --popover: 240 18% 9%;
+    --popover-foreground: 35 95% 92%;
 
-    --primary: 45 100% 65%;
-    --primary-foreground: 0 0% 7%;
+    --primary: 30 95% 60%;
+    --primary-foreground: 240 20% 6%;
 
-    --secondary: 0 85% 55%;
-    --secondary-foreground: 45 100% 95%;
+    --secondary: 8 85% 55%;
+    --secondary-foreground: 35 95% 92%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 45 20% 70%;
+    --muted: 240 15% 16%;
+    --muted-foreground: 35 30% 68%;
 
-    --accent: 45 100% 65%;
-    --accent-foreground: 0 0% 7%;
+    --accent: 25 90% 58%;
+    --accent-foreground: 240 20% 6%;
 
-    --destructive: 0 85% 55%;
-    --destructive-foreground: 45 100% 95%;
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 35 95% 92%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 45 100% 65%;
+    --border: 240 15% 18%;
+    --input: 240 15% 16%;
+    --ring: 30 95% 60%;
 
     --radius: 0.75rem;
 
     /* Custom Cinematic Variables */
-    --gold: 45 100% 65%;
-    --gold-dark: 45 90% 45%;
-    --film-red: 0 85% 55%;
-    --deep-black: 0 0% 7%;
-    --charcoal: 0 0% 15%;
+    --gold: 30 95% 60%;
+    --gold-dark: 28 85% 48%;
+    --bronze: 25 90% 58%;
+    --crimson: 8 85% 55%;
+    --film-red: 0 75% 58%;
+    --deep-black: 240 20% 6%;
+    --charcoal: 240 15% 14%;
     
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 7%) 0%, hsl(0 0% 12%) 50%, hsl(45 100% 15%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 10%) 0%, hsl(0 0% 8%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(45 100% 65%) 0%, hsl(45 90% 55%) 100%);
-    --gradient-red: linear-gradient(135deg, hsl(0 85% 55%) 0%, hsl(0 75% 45%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(240 20% 6%) 0%, hsl(240 18% 10%) 50%, hsl(8 85% 18%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(240 18% 9%) 0%, hsl(240 15% 12%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(30 95% 60%) 0%, hsl(25 90% 58%) 50%, hsl(28 85% 48%) 100%);
+    --gradient-bronze: linear-gradient(135deg, hsl(25 90% 58%) 0%, hsl(28 85% 48%) 100%);
+    --gradient-red: linear-gradient(135deg, hsl(8 85% 55%) 0%, hsl(0 75% 50%) 100%);
     
     /* Shadows */
-    --shadow-gold: 0 10px 40px -10px hsl(45 100% 65% / 0.3);
-    --shadow-red: 0 10px 40px -10px hsl(0 85% 55% / 0.3);
+    --shadow-gold: 0 12px 48px -12px hsl(30 95% 60% / 0.5);
+    --shadow-bronze: 0 12px 48px -12px hsl(25 90% 58% / 0.4);
+    --shadow-crimson: 0 12px 48px -12px hsl(8 85% 55% / 0.4);
+    --shadow-red: 0 10px 40px -10px hsl(0 75% 58% / 0.4);
     --shadow-cinematic: 0 20px 60px -15px hsl(0 0% 0% / 0.8);
   }
 }

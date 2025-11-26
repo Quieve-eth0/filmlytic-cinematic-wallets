@@ -49,6 +49,8 @@ export default {
         },
         gold: "hsl(var(--gold))",
         "gold-dark": "hsl(var(--gold-dark))",
+        bronze: "hsl(var(--bronze))",
+        crimson: "hsl(var(--crimson))",
         "film-red": "hsl(var(--film-red))",
         "deep-black": "hsl(var(--deep-black))",
         charcoal: "hsl(var(--charcoal))",
